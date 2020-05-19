@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+    go:
+        build: ./go
+        container_name: go
+        restart: always
+        tty: true
+#        ports:
+#            - "8080:8080"
+        networks:
+            - private-network
+                
+    nginx:
+        build: ./nginx
+        container_name: nginx
+        restart: always
+        tty: true
+        entrypoint: dockerize -template /var/nginx-conf/nginx.template:/etc/nginx/conf.d/nginx.conf nginx -g 'daemon off;'
+        environment: 
+            - NX_HOST=go
+            - NX_PORT=8080
+        ports:
+            - "8000:80"
+        volumes:
+            - ./nginx:/var/nginx-conf
+        networks:
+            - private-network
+        depends_on:
+            - go    
+            
+networks:
+    private-network:
+        driver: bridge
